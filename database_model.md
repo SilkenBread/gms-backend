@@ -9,11 +9,13 @@ erDiagram
         VARCHAR email
         VARCHAR phone
         VARCHAR user_type "ENUM('employee', 'member')"
+        BOOLEAN is_active "DEFAULT TRUE"
+        BOOLEAN is_staff "DEFAULT FALSE"
     }
 
     EMPLOYEE {
         VARCHAR id PK, FK
-        VARCHAR position "e.g., trainer, receptionist"
+        VARCHAR position "ENUM('trainer', 'receptionist')"
         DATE hire_date
         DECIMAL salary
     }
@@ -23,7 +25,7 @@ erDiagram
         DATE birth_date
         DATE registration_date
         BOOLEAN active_membership
-        VARCHAR membership_type "e.g., monthly, annual"
+        VARCHAR membership_type "ENUM('monthly', 'annual')"
         DATE membership_end_date
     }
 
@@ -32,8 +34,8 @@ erDiagram
         VARCHAR member_id FK
         DECIMAL amount
         DATE payment_date
-        VARCHAR payment_method "e.g., cash, card"
-        VARCHAR period "e.g., monthly, annual"
+        VARCHAR payment_method "ENUM('cash', 'transfer')"
+        VARCHAR period "ENUM('monthly', 'annual')"
     }
 
     ATTENDANCE {
@@ -55,7 +57,7 @@ erDiagram
         INT equipment_id PK
         VARCHAR name
         DATE purchase_date
-        VARCHAR status "e.g., operational, under maintenance"
+        VARCHAR status "ENUM('operational', 'under maintenance')"
         DATE last_maintenance_date
     }
 
