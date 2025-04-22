@@ -1,14 +1,20 @@
 # Members
 
-The following endpoints are only accessible for employees.
-
 ## Create a member
 
 ```
-POST /members/create/
+POST /members/
 ```
 
+### Permissions (create a member)
+
+- administrator.
+
+- receptionist.
+
 ### Description (create a member)
+
+Registers a new member with user and membership details.
 
 ### Request body (create a member)
 
@@ -77,6 +83,14 @@ Example:
 GET /members/{member_id}/
 ```
 
+### Permissions (retrieve a member)
+
+- administrator.
+
+- receptionist.
+
+- trainer.
+
 ### Description (retrieve a member)
 
 Retrieves detailed information about a specific member.
@@ -127,8 +141,14 @@ Retrieves detailed information about a specific member.
 ## List all members
 
 ```
-GET /members/list/
+GET /members/
 ```
+
+### Permissions (list all members)
+
+- administrator.
+
+- receptionist.
 
 ### Description (list all members)
 
@@ -136,7 +156,7 @@ Retrieves a list of all members registered in the system.
 
 ### Response (list all members)
 
-- `200 OK`
+- `200 OK`.
 
     ```json
     [
@@ -160,7 +180,7 @@ Retrieves a list of all members registered in the system.
     ]
     ```
 
-- `400 Bad Request`
+- `400 Bad Request`.
 
     ```json
     {
@@ -171,8 +191,14 @@ Retrieves a list of all members registered in the system.
 ## Update a member
 
 ```
-PUT /members/{member_id}/update/
+PUT /members/{member_id}/
 ```
+
+### Permissions (update a member)
+
+- administrator.
+
+- receptionist.
 
 ### Description (update a member)
 
@@ -248,6 +274,12 @@ Example:
 DELETE /members/{member_id}/delete/
 ```
 
+### Permissions (update a member)
+
+- administrator.
+
+- receptionist.
+
 ### Description (delete a member)
 
 Permanently removes a member from the system.
@@ -285,8 +317,14 @@ Permanently removes a member from the system.
 ## Register attendance
 
 ```
-POST /members/{member_id}/attendance/register/
+POST /members/{member_id}/attendance/
 ```
+
+### Permissions (update a member)
+
+- administrator.
+
+- receptionist.
 
 ### Description (register attendance)
 
@@ -295,17 +333,6 @@ Registers a new attendance entry for a specific member.
 ### Path parameters (register attendance)
 
 - `member_id`: the unique identifier of the member checking in.
-
-### Request body (register attendance)
-
-```json
-{
-    "user": {
-        "name": "string",
-        "surname": "string"
-    }
-}
-```
 
 ### Response (register attendance)
 
@@ -352,6 +379,12 @@ Registers a new attendance entry for a specific member.
 GET /members/{member_id}/attendance/
 ```
 
+### Permissions (update a member)
+
+- administrator.
+
+- receptionist.
+
 ### Description (list member attendance)
 
 Retrieves the attendance history for a specific member.
@@ -377,6 +410,130 @@ Retrieves the attendance history for a specific member.
         ]
     }
     ```
+    ```
+
+- `404 Not Found`.
+
+    ```json
+    {
+        "error": "Miembro no encontrado"
+    }
+    ```
+
+- `400 Bad Request`.
+
+    ```json
+    {
+        "error": "Error message"
+    }
+    ```
+
+## Create physical evaluation
+
+```
+POST /members/{member_id}/evaluation/
+```
+
+### Permissions (create physical evaluation)
+
+- trainer.
+
+### Description (create physical evaluation)
+
+Creates a new physical evaluation record for a specific member.
+
+### Path parameters (create physical evaluation)
+
+- `member_id`: the unique identifier of the member being evaluated.
+
+### Request body (create physical evaluation)
+
+```json
+{
+    "evaluation_date": "YYYY-MM-DD",
+    "weight": "decimal",
+    "height": "decimal",
+    "notes": "string"
+}
+```
+
+Example:
+
+```json
+{
+    "weight": 75.5,
+    "height": 180.0,
+    "notes": "Initial evaluation. Member is in good condition."
+}
+```
+
+> Note: If `evaluation_date` is not provided, the current date will be used.
+
+### Response (create physical evaluation)
+
+- `201 Created`.
+
+    ```json
+    {
+        "message": "Evaluación física registrada correctamente",
+        "evaluation_id": "integer",
+        "member_name": "string"
+    }
+    ```
+
+- `404 Not Found`.
+
+    ```json
+    {
+        "error": "Miembro no encontrado"
+    }
+    ```
+
+- `400 Bad Request`.
+
+    ```json
+    {
+        "error": "Error message"
+    }
+    ```
+
+## List member physical evaluations
+
+```
+GET /members/{member_id}/evaluation/
+```
+
+### Permissions (list member physical evaluations)
+
+- trainer.
+
+### Description (list member physical evaluations)
+
+Retrieves the physical evaluation history for a specific member.
+
+### Path parameters (list member physical evaluations)
+
+- `member_id`: the unique identifier of the member.
+
+### Response (list member physical evaluations)
+
+- `200 OK`.
+
+    ```json
+    {
+        "member_id": "string",
+        "member_name": "string",
+        "evaluations": [
+            {
+                "evaluation_id": "integer",
+                "evaluation_date": "YYYY-MM-DD",
+                "weight": "decimal",
+                "height": "decimal",
+                "notes": "string"
+            }
+            // ...
+        ]
+    }
     ```
 
 - `404 Not Found`.

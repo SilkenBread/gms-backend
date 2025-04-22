@@ -15,7 +15,7 @@ erDiagram
 
     EMPLOYEE {
         VARCHAR id PK, FK
-        VARCHAR position "ENUM('trainer', 'receptionist')"
+        VARCHAR position "ENUM('trainer', 'receptionist', 'administrator')"
         DATE hire_date
         DECIMAL salary
     }

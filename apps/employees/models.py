@@ -1,4 +1,5 @@
 from django.db import models
+
 from apps.users.models import User
 
 
@@ -27,14 +28,9 @@ class Maintenance(models.Model):
         return f"{self.equipment.name} - {self.maintenance_date}"
 
 class Employee(models.Model):
-    POSITION_CHOICES = [
-        ("trainer", "trainer"),
-        ("receptionist", "receptionist")
-    ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    position = models.CharField(max_length=50, choices=POSITION_CHOICES)
     hire_date = models.DateField()
     salary = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f"{self.user.email} - {self.position}"
+        return f"{self.user.email}"
