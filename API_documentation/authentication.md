@@ -70,7 +70,7 @@ Example:
     }
     ```
 
-## Refresh Token
+## Refresh token
 
 ```
 POST /auth/token/refresh/

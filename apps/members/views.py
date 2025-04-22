@@ -1,93 +1,92 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
-from rest_framework.response import Response
-from rest_framework import status
-from apps.users.models import User
-from .models import Member, Attendance
 from datetime import datetime
 
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import BasePermission
+from rest_framework.response import Response
 
-class IsEmployee(BasePermission):
-    """
-    Custom permission to only allow employees to access the view.
-    """
-    message = "Solo los empleados pueden registrar asistencia."
+from apps.users.models import User
 
+from .models import Attendance, Member, PhysicalEvaluation
+
+
+class IsTrainer(BasePermission):
+    """
+    Allows access only to users in the "trainer" group.
+    """
     def has_permission(self, request, view):
-        # Check if user is authenticated and is an employee
-        return request.user and request.user.is_authenticated and request.user.user_type == "employee"
-
-
-@api_view(["POST"])
-@permission_classes([AllowAny]) # IsEmployee
-def create_member(request):
-    try:
-        data = request.data
-        user_data = data.get("user")
-        member_data = data.get("member")
-
-        user = User.objects.create_user(
-            id=user_data["id"],
-            email=user_data["email"],
-            password=user_data["password"],
-            name=user_data["name"],
-            surname=user_data["surname"],
-            user_type="member"
+        return (
+            request.user
+            and request.user.is_authenticated
+            and request.user.groups.filter(name="trainer").exists()
         )
 
-        member = Member.objects.create(
-            user=user,
-            birth_date=member_data["birth_date"],
-            registration_date=member_data["registration_date"],
-            active_membership=member_data.get("active_membership", True),
-            membership_type=member_data["membership_type"],
-            membership_end_date=member_data["membership_end_date"]
+
+class IsReceptionistTrainerOrAdministrator(BasePermission):
+    """
+    Allows access only to users in the "administrator", "receptionist" or "trainer" groups.
+    """
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and request.user.is_authenticated
+            and (
+                request.user.groups.filter(name="administrator").exists() or
+                request.user.groups.filter(name="receptionist").exists() or
+                request.user.groups.filter(name="trainer").exists()
+            )
         )
 
-        return Response({"message": "Miembro creado", "member_id": member.user.id}, status=status.HTTP_201_CREATED)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+class IsReceptionistOrAdministrator(BasePermission):
+    """
+    Allows access only to users in the "receptionist" or "trainer" groups.
+    """
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and request.user.is_authenticated
+            and (
+                request.user.groups.filter(name="administrator").exists() or
+                request.user.groups.filter(name="receptionist").exists()
+            )
+        )
 
 
-@api_view(["GET"])
-@permission_classes([AllowAny]) # IsEmployee
-def retrieve_member(request, member_id):
-    try:
-        member = Member.objects.get(user_id=member_id)
-        user = member.user
+class MemberViewSet(viewsets.ViewSet):
+    permission_classes = [] # IsReceptionistOrAdministrator
 
-        member_data = {
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "name": user.name,
-                "surname": user.surname,
-                "user_type": user.user_type
-            },
-            "member": {
-                "birth_date": member.birth_date,
-                "registration_date": member.registration_date,
-                "active_membership": member.active_membership,
-                "membership_type": member.membership_type,
-                "membership_end_date": member.membership_end_date
-            }
-        }
+    def list(self, request):
+        try:
+            members = Member.objects.all()
+            members_data = []
+            for member in members:
+                user = member.user
+                member_data = {
+                    "user": {
+                        "id": user.id,
+                        "email": user.email,
+                        "name": user.name,
+                        "surname": user.surname,
+                        "user_type": user.user_type
+                    },
+                    "member": {
+                        "birth_date": member.birth_date,
+                        "registration_date": member.registration_date,
+                        "active_membership": member.active_membership,
+                        "membership_type": member.membership_type,
+                        "membership_end_date": member.membership_end_date
+                    }
+                }
+                members_data.append(member_data)
+            return Response(members_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(member_data, status=status.HTTP_200_OK)
-    except Member.DoesNotExist:
-        return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(["GET"])
-@permission_classes([AllowAny]) # IsEmployee
-def list_members(request):
-    try:
-        members = Member.objects.all()
-        members_data = []
-
-        for member in members:
+    def retrieve(self, request, pk=None):
+        # self.permission_classes = [IsReceptionistTrainerOrAdministrator]
+        # self.check_permissions(request)
+        try:
+            member = Member.objects.get(user_id=pk)
             user = member.user
             member_data = {
                 "user": {
@@ -105,136 +104,172 @@ def list_members(request):
                     "membership_end_date": member.membership_end_date
                 }
             }
-            members_data.append(member_data)
+            return Response(member_data, status=status.HTTP_200_OK)
+        except Member.DoesNotExist:
+            return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(members_data, status=status.HTTP_200_OK)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(["PUT"])
-@permission_classes([AllowAny]) # IsEmployee
-def update_member(request, member_id):
-    try:
-        member = Member.objects.get(user_id=member_id)
-        user = member.user
-
-        data = request.data
-        user_data = data.get("user", {})
-        member_data = data.get("member", {})
-
-        # Update user data if provided
-        if user_data:
-            if "email" in user_data:
-                user.email = user_data["email"]
-            if "name" in user_data:
-                user.name = user_data["name"]
-            if "surname" in user_data:
-                user.surname = user_data["surname"]
-            if "password" in user_data:
-                user.set_password(user_data["password"])
-            user.save()
-
-        # Update member data if provided
-        if member_data:
-            if "birth_date" in member_data:
-                member.birth_date = member_data["birth_date"]
-            if "registration_date" in member_data:
-                member.registration_date = member_data["registration_date"]
-            if "active_membership" in member_data:
-                member.active_membership = member_data["active_membership"]
-            if "membership_type" in member_data:
-                member.membership_type = member_data["membership_type"]
-            if "membership_end_date" in member_data:
-                member.membership_end_date = member_data["membership_end_date"]
-            member.save()
-
-        return Response({"message": "Miembro actualizado correctamente"}, status=status.HTTP_200_OK)
-    except Member.DoesNotExist:
-        return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(["DELETE"])
-@permission_classes([AllowAny]) # IsEmployee
-def delete_member(request, member_id):
-    try:
-        member = Member.objects.get(user_id=member_id)
-        user = member.user
-
-        # Delete user (will cascade delete the member due to OneToOneField)
-        user.delete()
-
-        return Response({"message": "Miembro eliminado correctamente"}, status=status.HTTP_200_OK)
-    except Member.DoesNotExist:
-        return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(["POST"])
-@permission_classes([AllowAny]) # IsEmployee
-def register_attendance(request, member_id):
-    try:
-        # Check if member exists
-        member = Member.objects.get(user_id=member_id)
-
-        # Get the employee who is registering the attendance
-        employee = request.user
-
-        # Check if member has active membership
-        if not member.active_membership:
-            return Response(
-                {"error": "La membresía del usuario no está activa"},
-                status=status.HTTP_400_BAD_REQUEST
+    def create(self, request):
+        try:
+            data = request.data
+            user_data = data.get("user")
+            member_data = data.get("member")
+            user = User.objects.create_user(
+                id=user_data["id"],
+                email=user_data["email"],
+                password=user_data["password"],
+                name=user_data["name"],
+                surname=user_data["surname"],
+                user_type="member"
             )
+            member = Member.objects.create(
+                user=user,
+                birth_date=member_data["birth_date"],
+                registration_date=member_data["registration_date"],
+                active_membership=member_data.get("active_membership", True),
+                membership_type=member_data["membership_type"],
+                membership_end_date=member_data["membership_end_date"]
+            )
+            return Response({"message": "Miembro creado", "member_id": member.user.id}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create attendance record with current datetime
-        attendance = Attendance.objects.create(
-            member=member,
-            entry_time=datetime.now()
-        )
+    def update(self, request, pk=None):
+        try:
+            member = Member.objects.get(user_id=pk)
+            user = member.user
+            data = request.data
+            user_data = data.get("user", {})
+            member_data = data.get("member", {})
+            if user_data:
+                if "email" in user_data:
+                    user.email = user_data["email"]
+                if "name" in user_data:
+                    user.name = user_data["name"]
+                if "surname" in user_data:
+                    user.surname = user_data["surname"]
+                if "password" in user_data:
+                    user.set_password(user_data["password"])
+                user.save()
+            if member_data:
+                if "birth_date" in member_data:
+                    member.birth_date = member_data["birth_date"]
+                if "registration_date" in member_data:
+                    member.registration_date = member_data["registration_date"]
+                if "active_membership" in member_data:
+                    member.active_membership = member_data["active_membership"]
+                if "membership_type" in member_data:
+                    member.membership_type = member_data["membership_type"]
+                if "membership_end_date" in member_data:
+                    member.membership_end_date = member_data["membership_end_date"]
+                member.save()
+            return Response({"message": "Miembro actualizado correctamente"}, status=status.HTTP_200_OK)
+        except Member.DoesNotExist:
+            return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({
-            "message": "Asistencia registrada correctamente",
-            "attendance_id": attendance.attendance_id,
-            "entry_time": attendance.entry_time,
-            "member_name": f"{member.user.name} {member.user.surname}",
-            "registered_by": f"{employee.name} {employee.surname}"
-        }, status=status.HTTP_201_CREATED)
+    def destroy(self, request, pk=None):
+        try:
+            member = Member.objects.get(user_id=pk)
+            user = member.user
+            user.delete()
+            return Response({"message": "Miembro eliminado correctamente"}, status=status.HTTP_200_OK)
+        except Member.DoesNotExist:
+            return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    except Member.DoesNotExist:
-        return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=True, methods=["get", "post"], url_path="attendance")
+    def attendance(self, request, pk=None):
+        if request.method == "GET":
+            try:
+                member = Member.objects.get(user_id=pk)
+                attendance_records = Attendance.objects.filter(member=member).order_by('-entry_time')
+                attendance_data = []
+                for record in attendance_records:
+                    attendance_data.append({
+                        "attendance_id": record.attendance_id,
+                        "entry_time": record.entry_time,
+                    })
+                return Response({
+                    "member_id": pk,
+                    "member_name": f"{member.user.name} {member.user.surname}",
+                    "attendance_records": attendance_data
+                }, status=status.HTTP_200_OK)
+            except Member.DoesNotExist:
+                return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        elif request.method == "POST":
+            try:
+                member = Member.objects.get(user_id=pk)
+                employee = request.user
+                if not member.active_membership:
+                    return Response({"error": "La membresía del usuario no está activa"}, status=status.HTTP_400_BAD_REQUEST)
+                attendance = Attendance.objects.create(
+                    member=member,
+                    entry_time=datetime.now()
+                )
+                return Response({
+                    "message": "Asistencia registrada correctamente",
+                    "attendance_id": attendance.attendance_id,
+                    "entry_time": attendance.entry_time,
+                    "member_name": f"{member.user.name} {member.user.surname}",
+                    "registered_by": f"{employee.name} {employee.surname}"
+                }, status=status.HTTP_201_CREATED)
+            except Member.DoesNotExist:
+                return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True, methods=["get", "post"], url_path="evaluation")
+    def physical_evaluation(self, request, pk=None):
+        # self.permission_classes = [IsTrainer]
+        # self.check_permissions(request)
+        if request.method == "GET":
+            try:
+                member = Member.objects.get(user_id=pk)
+                evaluations = PhysicalEvaluation.objects.filter(member=member).order_by('-evaluation_date')
+                evaluation_data = []
+                for eval in evaluations:
+                    evaluation_data.append({
+                        "evaluation_id": eval.evaluation_id,
+                        "evaluation_date": eval.evaluation_date,
+                        "weight": eval.weight,
+                        "height": eval.height,
+                        "notes": eval.notes
+                    })
+                return Response({
+                    "member_id": pk,
+                    "member_name": f"{member.user.name} {member.user.surname}",
+                    "evaluations": evaluation_data
+                }, status=status.HTTP_200_OK)
+            except Member.DoesNotExist:
+                return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(["GET"])
-@permission_classes([AllowAny]) # IsEmployee
-def list_member_attendance(request, member_id):
-    try:
-        # Check if member exists
-        member = Member.objects.get(user_id=member_id)
+        elif request.method == "POST":
+            try:
+                member = Member.objects.get(user_id=pk)
+                data = request.data
 
-        # Get all attendance records for this member
-        attendance_records = Attendance.objects.filter(member=member).order_by('-entry_time')
+                evaluation = PhysicalEvaluation.objects.create(
+                    member=member,
+                    evaluation_date=data.get("evaluation_date", datetime.now().date()),
+                    weight=data["weight"],
+                    height=data["height"],
+                    notes=data.get("notes", "")
+                )
 
-        # Format the response
-        attendance_data = []
-        for record in attendance_records:
-            attendance_data.append({
-                "attendance_id": record.attendance_id,
-                "entry_time": record.entry_time,
-            })
-
-        return Response({
-            "member_id": member_id,
-            "member_name": f"{member.user.name} {member.user.surname}",
-            "attendance_records": attendance_data
-        }, status=status.HTTP_200_OK)
-
-    except Member.DoesNotExist:
-        return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({
+                    "message": "Evaluación física registrada correctamente",
+                    "evaluation_id": evaluation.evaluation_id,
+                    "member_name": f"{member.user.name} {member.user.surname}"
+                }, status=status.HTTP_201_CREATED)
+            except Member.DoesNotExist:
+                return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
