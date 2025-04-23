@@ -121,7 +121,7 @@ USE_L10N = True
 USE_TZ = False
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000"
+    "http://localhost:5173"
 ]
 
 AUTH_USER_MODEL = 'users.User'
