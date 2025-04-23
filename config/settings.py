@@ -122,7 +122,7 @@ USE_TZ = False
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://https://gemelosgym.vercel.app"
+    "https://gemelosgym.vercel.app"
 ]
 
 AUTH_USER_MODEL = 'users.User'
