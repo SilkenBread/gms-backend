@@ -8,8 +8,6 @@ POST /members/
 
 ### Permissions (create a member)
 
-- administrator.
-
 - receptionist.
 
 ### Description (create a member)
@@ -33,27 +31,6 @@ Registers a new member with user and membership details.
         "active_membership": true,
         "membership_type": "monthly | annual",
         "membership_end_date": "YYYY-MM-DD"
-    }
-}
-```
-
-Example:
-
-```json
-{
-    "user": {
-        "id": "12345678",
-        "email": "jane.doe@example.com",
-        "password": "securepassword123",
-        "name": "Jane",
-        "surname": "Doe"
-    },
-        "member": {
-        "birth_date": "1995-06-15",
-        "registration_date": "2025-04-19",
-        "active_membership": true,
-        "membership_type": "monthly",
-        "membership_end_date": "2025-05-19"
     }
 }
 ```
@@ -85,8 +62,6 @@ GET /members/{member_id}/
 
 ### Permissions (retrieve a member)
 
-- administrator.
-
 - receptionist.
 
 - trainer.
@@ -108,7 +83,6 @@ Retrieves detailed information about a specific member.
         "user": {
             "id": "string",
             "email": "string",
-            "password": "string",
             "name": "string",
             "surname": "string"
         },
@@ -145,8 +119,6 @@ GET /members/
 ```
 
 ### Permissions (list all members)
-
-- administrator.
 
 - receptionist.
 
@@ -196,8 +168,6 @@ PUT /members/{member_id}/
 
 ### Permissions (update a member)
 
-- administrator.
-
 - receptionist.
 
 ### Description (update a member)
@@ -224,20 +194,6 @@ Updates information for an existing member. All fields are optional (only includ
         "active_membership": true,
         "membership_type": "monthly | annual",
         "membership_end_date": "YYYY-MM-DD"
-    }
-}
-```
-
-Example:
-
-```json
-{
-    "user": {
-        "email": "new.email@example.com",
-        "name": "Updated Name"
-    },
-    "member": {
-        "active_membership": false
     }
 }
 ```
@@ -271,18 +227,16 @@ Example:
 ## Delete a member
 
 ```
-DELETE /members/{member_id}/delete/
+DELETE /members/{member_id}/
 ```
 
 ### Permissions (update a member)
-
-- administrator.
 
 - receptionist.
 
 ### Description (delete a member)
 
-Permanently removes a member from the system.
+Removes a member from the system.
 
 ### Path parameters (delete a member)
 
@@ -320,9 +274,7 @@ Permanently removes a member from the system.
 POST /members/{member_id}/attendance/
 ```
 
-### Permissions (update a member)
-
-- administrator.
+### Permissions (register attendance)
 
 - receptionist.
 
@@ -346,7 +298,6 @@ Registers a new attendance entry for a specific member.
         "member_name": "string",
         "registered_by": "string"
     }
-    ```
     ```
 
 - `400 Bad Request`.
@@ -379,9 +330,7 @@ Registers a new attendance entry for a specific member.
 GET /members/{member_id}/attendance/
 ```
 
-### Permissions (update a member)
-
-- administrator.
+### Permissions (list member attendance)
 
 - receptionist.
 
@@ -409,7 +358,6 @@ Retrieves the attendance history for a specific member.
             // ...
         ]
     }
-    ```
     ```
 
 - `404 Not Found`.
@@ -454,16 +402,6 @@ Creates a new physical evaluation record for a specific member.
     "weight": "decimal",
     "height": "decimal",
     "notes": "string"
-}
-```
-
-Example:
-
-```json
-{
-    "weight": 75.5,
-    "height": 180.0,
-    "notes": "Initial evaluation. Member is in good condition."
 }
 ```
 

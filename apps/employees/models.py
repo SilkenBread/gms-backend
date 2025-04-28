@@ -5,8 +5,8 @@ from apps.users.models import User
 
 class Equipment(models.Model):
     STATUS_CHOICES = [
-        ("operational", "operational"),
-        ("under_maintenance", "under maintenance"),
+        ("operational", "operacional"),
+        ("under_maintenance", "bajo mantenimiento"),
     ]
     equipment_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)

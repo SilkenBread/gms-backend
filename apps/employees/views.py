@@ -22,7 +22,7 @@ class IsAdministrator(BasePermission):
 
 
 class EmployeeViewSet(viewsets.ViewSet):
-    permission_classes = [] # IsAdministrator
+    permission_classes = [IsAdministrator]
 
     def list(self, request):
         try:
@@ -30,6 +30,7 @@ class EmployeeViewSet(viewsets.ViewSet):
             employees_data = []
             for emp in employees:
                 user = emp.user
+                groups = list(user.groups.values_list("name", flat=True))
                 emp_data = {
                     "user": {
                         "id": user.id,
@@ -40,7 +41,8 @@ class EmployeeViewSet(viewsets.ViewSet):
                     },
                     "employee": {
                         "hire_date": emp.hire_date,
-                        "salary": emp.salary
+                        "salary": emp.salary,
+                        "groups": groups
                     }
                 }
                 employees_data.append(emp_data)
@@ -52,6 +54,7 @@ class EmployeeViewSet(viewsets.ViewSet):
         try:
             emp = Employee.objects.get(user_id=pk)
             user = emp.user
+            groups = list(user.groups.values_list("name", flat=True))
             emp_data = {
                 "user": {
                     "id": user.id,
@@ -62,7 +65,8 @@ class EmployeeViewSet(viewsets.ViewSet):
                 },
                 "employee": {
                     "hire_date": emp.hire_date,
-                    "salary": emp.salary
+                    "salary": emp.salary,
+                    "groups": groups
                 }
             }
             return Response(emp_data, status=status.HTTP_200_OK)
@@ -163,7 +167,7 @@ class EmployeeViewSet(viewsets.ViewSet):
 
 
 class EquipmentViewSet(viewsets.ViewSet):
-    permission_classes = [] # IsAdministrator
+    permission_classes = [IsAdministrator]
 
     def list(self, request):
         try:
@@ -241,7 +245,7 @@ class EquipmentViewSet(viewsets.ViewSet):
 
 
 class MaintenanceViewSet(viewsets.ViewSet):
-    permission_classes = [] # IsAdministrator
+    permission_classes = [IsAdministrator]
 
     def list(self, request):
         try:

@@ -25,6 +25,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=150)
     surname = models.CharField(max_length=150)
     email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=10)
     USER_TYPE_CHOICES = [
         ("employee", "employee"),
         ("member", "member"),

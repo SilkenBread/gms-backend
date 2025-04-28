@@ -21,12 +21,12 @@ class Member(models.Model):
 
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
-        ("cash", "cash"),
-        ("transfer", "transfer"),
+        ("cash", "efectivo"),
+        ("transfer", "transferencai"),
     ]
     PERIOD_CHOICES = [
-        ("monthly", "monthly"),
-        ("annual", "annual"),
+        ("monthly", "mensual"),
+        ("annual", "anual"),
     ]
     payment_id = models.AutoField(primary_key=True)
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
