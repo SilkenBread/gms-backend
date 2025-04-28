@@ -53,7 +53,7 @@ class IsReceptionistOrAdministrator(BasePermission):
 
 
 class MemberViewSet(viewsets.ViewSet):
-    permission_classes = [] # IsReceptionistOrAdministrator
+    permission_classes = [IsReceptionistOrAdministrator]
 
     def list(self, request):
         try:
@@ -83,8 +83,8 @@ class MemberViewSet(viewsets.ViewSet):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
-        # self.permission_classes = [IsReceptionistTrainerOrAdministrator]
-        # self.check_permissions(request)
+        self.permission_classes = [IsReceptionistTrainerOrAdministrator]
+        self.check_permissions(request)
         try:
             member = Member.objects.get(user_id=pk)
             user = member.user
@@ -226,8 +226,8 @@ class MemberViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=["get", "post"], url_path="evaluation")
     def physical_evaluation(self, request, pk=None):
-        # self.permission_classes = [IsTrainer]
-        # self.check_permissions(request)
+        self.permission_classes = [IsTrainer]
+        self.check_permissions(request)
         if request.method == "GET":
             try:
                 member = Member.objects.get(user_id=pk)

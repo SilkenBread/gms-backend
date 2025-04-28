@@ -19,15 +19,6 @@ Authenticates a user (employee or member) and returns JWT tokens for authorizati
 }
 ```
 
-Example:
-
-```json
-{
-    "email": "employee@example.com",
-    "password": "securepassword123"
-}
-```
-
 ### Response (login)
 
 - `200 OK`

@@ -1,18 +1,20 @@
 # Equipment
 
-The following endpoints are only accessible for users in the group "administrator".
+## Permissions
+
+- administrator.
 
 ## Create equipment
 
 ```
-POST /equipment/create/
+POST /equipment/
 ```
 
-### Description
+### Description (create equipment)
 
 Creates a new equipment record.
 
-### Request body
+### Request body (create equipment)
 
 ```json
 {
@@ -23,7 +25,7 @@ Creates a new equipment record.
 }
 ```
 
-### Response
+### Response (create equipment)
 
 - `201 Created`.
 
@@ -48,15 +50,15 @@ Creates a new equipment record.
 GET /equipment/{equipment_id}/
 ```
 
-### Description
+### Description (retrieve equipment)
 
 Retrieves detailed information about a specific equipment item.
 
-### Path parameters
+### Path parameters (retrieve equipment)
 
 - `equipment_id`: the unique identifier of the equipment.
 
-### Response
+### Response (retrieve equipment)
 
 - `200 OK`.
 
@@ -89,14 +91,14 @@ Retrieves detailed information about a specific equipment item.
 ## List all equipment
 
 ```
-GET /equipment/list/
+GET /equipment/
 ```
 
-### Description
+### Description (list all equipment)
 
-Retrieves a list of all equipment in the system.
+Retrieves a list of all equipment in the gym.
 
-### Response
+### Response (list all equipment)
 
 - `200 OK`.
 
@@ -124,18 +126,18 @@ Retrieves a list of all equipment in the system.
 ## Update equipment
 
 ```
-PUT /equipment/{equipment_id}/update/
+PUT /equipment/{equipment_id}/
 ```
 
-### Description
+### Description (update equipment)
 
 Updates information for an existing equipment item. All fields are optional.
 
-### Path parameters
+### Path parameters (update equipment)
 
 - `equipment_id`: the unique identifier of the equipment.
 
-### Request body
+### Request body (update equipment)
 
 ```json
 {
@@ -146,7 +148,7 @@ Updates information for an existing equipment item. All fields are optional.
 }
 ```
 
-### Response
+### Response (update equipment)
 
 - `200 OK`.
 
@@ -175,18 +177,18 @@ Updates information for an existing equipment item. All fields are optional.
 ## Delete equipment
 
 ```
-DELETE /equipment/{equipment_id}/delete/
+DELETE /equipment/{equipment_id}/
 ```
 
-### Description
+### Description (delete equipment)
 
-Permanently removes an equipment item from the system.
+Removes an equipment item from the gym.
 
-### Path parameters
+### Path parameters (delete equipment)
 
 - `equipment_id`: the unique identifier of the equipment.
 
-### Response
+### Response (delete equipment)
 
 - `200 OK`.
 

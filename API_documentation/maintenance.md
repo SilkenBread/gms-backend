@@ -1,18 +1,20 @@
 # Maintenance
 
-The following endpoints are only accessible for users in the group "administrator".
+## Permissions
 
-## Create maintenance
+- administrator.
+
+## Create a maintenance
 
 ```
-POST /maintenance/create/
+POST /maintenance/
 ```
 
-### Description
+### Description (create a maintenance)
 
 Creates a new maintenance record for equipment.
 
-### Request body
+### Request body (create a maintenance)
 
 ```json
 {
@@ -23,7 +25,7 @@ Creates a new maintenance record for equipment.
 }
 ```
 
-### Response
+### Response (create a maintenance)
 
 - `201 Created`.
 
@@ -42,21 +44,21 @@ Creates a new maintenance record for equipment.
     }
     ```
 
-## Retrieve maintenance
+## Retrieve a maintenance
 
 ```
 GET /maintenance/{maintenance_id}/
 ```
 
-### Description
+### Description (retrieve a maintenance)
 
 Retrieves detailed information about a specific maintenance record.
 
-### Path parameters
+### Path parameters (retrieve a maintenance)
 
 - `maintenance_id`: the unique identifier of the maintenance record.
 
-### Response
+### Response (retrieve a maintenance)
 
 - `200 OK`.
 
@@ -90,14 +92,14 @@ Retrieves detailed information about a specific maintenance record.
 ## List all maintenance
 
 ```
-GET /maintenance/list/
+GET /maintenance/
 ```
 
-### Description
+### Description (list all maintenance)
 
-Retrieves a list of all maintenance records in the system.
+Retrieves a list of all maintenance records in the gym.
 
-### Response
+### Response (list all maintenance)
 
 - `200 OK`.
 
@@ -123,24 +125,25 @@ Retrieves a list of all maintenance records in the system.
     }
     ```
 
-## Update maintenance
+## Update a maintenance
 
 ```
-PUT /maintenance/{maintenance_id}/update/
+PUT /maintenance/{maintenance_id}/
 ```
 
-### Description
+### Description (update a maintenance)
 
 Updates information for an existing maintenance record. All fields are optional.
 
-### Path parameters
+### Path parameters (update a maintenance)
 
 - `maintenance_id`: the unique identifier of the maintenance record.
 
-### Request body
+### Request body (update a maintenance)
 
 ```json
 {
+    "maintenance_id": "integer",
     "equipment_id": "integer",
     "maintenance_date": "YYYY-MM-DD",
     "description": "string",
@@ -148,7 +151,7 @@ Updates information for an existing maintenance record. All fields are optional.
 }
 ```
 
-### Response
+### Response (Update a maintenance)
 
 - `200 OK`.
 
@@ -174,21 +177,21 @@ Updates information for an existing maintenance record. All fields are optional.
     }
     ```
 
-## Delete maintenance
+## Delete a maintenance
 
 ```
-DELETE /maintenance/{maintenance_id}/delete/
+DELETE /maintenance/{maintenance_id}/
 ```
 
-### Description
+### Description (delete a maintenance)
 
-Permanently removes a maintenance record from the system.
+Removes a maintenance record from the gym.
 
-### Path parameters
+### Path parameters (delete a maintenance)
 
 - `maintenance_id`: the unique identifier of the maintenance record.
 
-### Response
+### Response (delete a maintenance)
 
 - `200 OK`.
 

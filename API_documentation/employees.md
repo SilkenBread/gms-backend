@@ -1,20 +1,22 @@
 # Employees (app)
 
-The following endpoints are only accessible for users in the group "administrator".
+## Permissions
+
+- administrator.
 
 ## Employees
 
 ### Create an employee
 
 ```
-POST /employees/create/
+POST /employees/
 ```
 
-#### Description
+#### Description (create an employee)
 
 Creates a new employee and assigns them to one or more groups ("administrator", "trainer", or "receptionist").
 
-#### Request body
+#### Request body (create an employee)
 
 ```json
 {
@@ -33,7 +35,7 @@ Creates a new employee and assigns them to one or more groups ("administrator", 
 }
 ```
 
-#### Response
+#### Response (create an employee)
 
 - `201 Created`.
 
@@ -58,17 +60,18 @@ Creates a new employee and assigns them to one or more groups ("administrator", 
 GET /employees/{employee_id}/
 ```
 
-#### Description
+#### Description (retrieve an employee)
 
 Retrieves detailed information about a specific employee.
 
-#### Path parameters
+#### Path parameters (retrieve an employee)
 
 - `employee_id`: the unique identifier of the employee (user id).
 
-#### Response
+#### Response (retrieve an employee)
 
 - `200 OK`.
+
     ```json
     {
         "user": {
@@ -76,16 +79,18 @@ Retrieves detailed information about a specific employee.
             "email": "string",
             "name": "string",
             "surname": "string",
-            "user_type": "employee"
+            "user_type": "employee",
         },
         "employee": {
             "hire_date": "YYYY-MM-DD",
-            "salary": "decimal"
+            "salary": "decimal",
+            "groups": "employee groups"
         }
     }
     ```
 
 - `404 Not Found`.
+
     ```json
     {
         "error": "Empleado no encontrado"
@@ -103,14 +108,14 @@ Retrieves detailed information about a specific employee.
 ### List all employees
 
 ```
-GET /employees/list/
+GET /employees/
 ```
 
-#### Description
+#### Description (list all employees)
 
-Retrieves a list of all employees registered in the system.
+Retrieves a list of all employees registered in the gym.
 
-#### Response
+#### Response (list all employees)
 
 - `200 OK`.
 
@@ -126,7 +131,8 @@ Retrieves a list of all employees registered in the system.
             },
             "employee": {
                 "hire_date": "YYYY-MM-DD",
-                "salary": "decimal"
+                "salary": "decimal",
+                "groups": "employee groups"
             }
         },
         // ...
@@ -144,20 +150,20 @@ Retrieves a list of all employees registered in the system.
 ### Update an employee
 
 ```
-PUT /employees/{employee_id}/update/
+PUT /employees/{employee_id}/
 ```
 
-#### Description
+#### Description (update an employee)
 
 Updates information for an existing employee. All fields are optional (only include the fields you want to update). You can also update the employee's groups.
 
 > If you want to keep the employee's current groups unchanged, you must explicitly provide the current groups in the `groups` field of the request body. Any groups not included will be removed from the employee.
 
-#### Path parameters
+#### Path parameters (update an employee)
 
 - `employee_id`: the unique identifier of the employee (user id).
 
-#### Request body
+#### Request body (update an employee)
 
 ```json
 {
@@ -175,7 +181,7 @@ Updates information for an existing employee. All fields are optional (only incl
 }
 ```
 
-#### Response
+#### Response (update an employee)
 
 - `200 OK`.
 
@@ -204,18 +210,18 @@ Updates information for an existing employee. All fields are optional (only incl
 ### Delete an employee
 
 ```
-DELETE /employees/{employee_id}/delete/
+DELETE /employees/{employee_id}/
 ```
 
-#### Description
+#### Description (delete an employee)
 
-Permanently removes an employee from the system.
+Removes an employee from the gym.
 
-#### Path parameters
+#### Path parameters (delete an employee)
 
 - `employee_id`: the unique identifier of the employee (user id).
 
-#### Response
+#### Response (delete an employee)
 
 - `200 OK`.
 
