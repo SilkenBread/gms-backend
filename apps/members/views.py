@@ -1,13 +1,14 @@
-from datetime import datetime
-
+from datetime import datetime, timedelta
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
-
+from rest_framework.permissions import IsAuthenticated
+from .serializers import AttendanceSerializer, CreateAttendanceSerializer
 from apps.users.models import User
 
-from .models import Attendance, Member, PhysicalEvaluation
+from .models import Attendance, Member
 
 
 class IsTrainer(BasePermission):
@@ -20,7 +21,6 @@ class IsTrainer(BasePermission):
             and request.user.is_authenticated
             and request.user.groups.filter(name="trainer").exists()
         )
-
 
 class IsReceptionistTrainerOrAdministrator(BasePermission):
     """
@@ -50,7 +50,6 @@ class IsReceptionistOrAdministrator(BasePermission):
                 request.user.groups.filter(name="receptionist").exists()
             )
         )
-
 
 class MemberViewSet(viewsets.ViewSet):
     permission_classes = [IsReceptionistOrAdministrator]
@@ -224,52 +223,126 @@ class MemberViewSet(viewsets.ViewSet):
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=["get", "post"], url_path="evaluation")
-    def physical_evaluation(self, request, pk=None):
-        self.permission_classes = [IsTrainer]
-        self.check_permissions(request)
-        if request.method == "GET":
-            try:
-                member = Member.objects.get(user_id=pk)
-                evaluations = PhysicalEvaluation.objects.filter(member=member).order_by('-evaluation_date')
-                evaluation_data = []
-                for eval in evaluations:
-                    evaluation_data.append({
-                        "evaluation_id": eval.evaluation_id,
-                        "evaluation_date": eval.evaluation_date,
-                        "weight": eval.weight,
-                        "height": eval.height,
-                        "notes": eval.notes
-                    })
-                return Response({
-                    "member_id": pk,
-                    "member_name": f"{member.user.name} {member.user.surname}",
-                    "evaluations": evaluation_data
-                }, status=status.HTTP_200_OK)
-            except Member.DoesNotExist:
-                return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    # @action(detail=True, methods=["get", "post"], url_path="evaluation")
+    # def physical_evaluation(self, request, pk=None):
+    #     self.permission_classes = [IsTrainer]
+    #     self.check_permissions(request)
+    #     if request.method == "GET":
+    #         try:
+    #             member = Member.objects.get(user_id=pk)
+    #             evaluations = PhysicalEvaluation.objects.filter(member=member).order_by('-evaluation_date')
+    #             evaluation_data = []
+    #             for eval in evaluations:
+    #                 evaluation_data.append({
+    #                     "evaluation_id": eval.evaluation_id,
+    #                     "evaluation_date": eval.evaluation_date,
+    #                     "weight": eval.weight,
+    #                     "height": eval.height,
+    #                     "notes": eval.notes
+    #                 })
+    #             return Response({
+    #                 "member_id": pk,
+    #                 "member_name": f"{member.user.name} {member.user.surname}",
+    #                 "evaluations": evaluation_data
+    #             }, status=status.HTTP_200_OK)
+    #         except Member.DoesNotExist:
+    #             return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+    #         except Exception as e:
+    #             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        elif request.method == "POST":
-            try:
-                member = Member.objects.get(user_id=pk)
-                data = request.data
+    #     elif request.method == "POST":
+    #         try:
+    #             member = Member.objects.get(user_id=pk)
+    #             data = request.data
 
-                evaluation = PhysicalEvaluation.objects.create(
-                    member=member,
-                    evaluation_date=data.get("evaluation_date", datetime.now().date()),
-                    weight=data["weight"],
-                    height=data["height"],
-                    notes=data.get("notes", "")
-                )
+    #             evaluation = PhysicalEvaluation.objects.create(
+    #                 member=member,
+    #                 evaluation_date=data.get("evaluation_date", datetime.now().date()),
+    #                 weight=data["weight"],
+    #                 height=data["height"],
+    #                 notes=data.get("notes", "")
+    #             )
 
-                return Response({
-                    "message": "Evaluación física registrada correctamente",
-                    "evaluation_id": evaluation.evaluation_id,
-                    "member_name": f"{member.user.name} {member.user.surname}"
-                }, status=status.HTTP_201_CREATED)
-            except Member.DoesNotExist:
-                return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    #             return Response({
+    #                 "message": "Evaluación física registrada correctamente",
+    #                 "evaluation_id": evaluation.evaluation_id,
+    #                 "member_name": f"{member.user.name} {member.user.surname}"
+    #             }, status=status.HTTP_201_CREATED)
+    #         except Member.DoesNotExist:
+    #             return Response({"error": "Miembro no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+    #         except Exception as e:
+    #             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AttendanceViewSet(viewsets.ModelViewSet):
+    queryset = Attendance.objects.all().order_by('-entry_time')
+    serializer_class = AttendanceSerializer
+    permission_classes = [IsAuthenticated, IsReceptionistOrAdministrator]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CreateAttendanceSerializer
+        return super().get_serializer_class()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        member_id = self.request.query_params.get('member_id')
+        
+        if member_id:
+            queryset = queryset.filter(member__user_id=member_id)
+        
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        attendance = serializer.save()
+        
+        # Serialize the response with additional data
+        response_serializer = AttendanceSerializer(
+            attendance, 
+            context={'request': request}
+        )
+        
+        headers = self.get_success_headers(response_serializer.data)
+        return Response(
+            response_serializer.data, 
+            status=status.HTTP_201_CREATED, 
+            headers=headers
+        )
+
+    @action(detail=False, methods=['get'], url_path='today')
+    def today_attendance(self, request):
+        today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_end = today_start + timedelta(days=1)
+        
+        attendances = self.get_queryset().filter(
+            entry_time__range=(today_start, today_end)
+        )
+        
+        page = self.paginate_queryset(attendances)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = self.get_serializer(attendances, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='member/(?P<member_id>[^/.]+)')
+    def member_attendance(self, request, member_id=None):
+        try:
+            member = Member.objects.get(user_id=member_id)
+            attendances = self.get_queryset().filter(member=member)
+            
+            page = self.paginate_queryset(attendances)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            
+            serializer = self.get_serializer(attendances, many=True)
+            return Response(serializer.data)
+        except Member.DoesNotExist:
+            return Response(
+                {"error": "Miembro no encontrado"},
+                status=status.HTTP_404_NOT_FOUND
+            )
