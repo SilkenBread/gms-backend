@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Attendance, Member
+from .models import Attendance, Member, MembershipPlan, Payment
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth import get_user_model
@@ -83,3 +83,43 @@ class CreateAttendanceSerializer(serializers.ModelSerializer):
             entry_time=timezone.now()
         )
         return attendance
+
+class MembershipPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MembershipPlan
+        fields = '__all__'
+
+class MemberSerializer(serializers.ModelSerializer):
+    membership_plan = MembershipPlanSerializer(read_only=True)
+    
+    class Meta:
+        model = Member
+        fields = '__all__'
+
+class PaymentSerializer(serializers.ModelSerializer):
+    member = MemberSerializer(read_only=True)
+    membership_plan = MembershipPlanSerializer(read_only=True)
+    created_by = serializers.StringRelatedField()
+    
+    class Meta:
+        model = Payment
+        fields = '__all__'
+        read_only_fields = ['payment_id', 'created_at', 'created_by']
+
+class CreatePaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['member', 'membership_plan', 'amount', 'payment_date', 'payment_method']
+    
+    def validate(self, data):
+        # Validar que el plan esté activo
+        if not data['membership_plan'].is_active:
+            raise serializers.ValidationError("Este plan de membresía no está disponible")
+        
+        # Validar que el monto sea correcto
+        if data['amount'] != data['membership_plan'].price:
+            raise serializers.ValidationError(
+                f"El monto debe ser {data['membership_plan'].price} para este plan"
+            )
+        
+        return data
