@@ -1,14 +1,17 @@
 from datetime import datetime, timedelta
+
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .serializers import AttendanceSerializer, CreateAttendanceSerializer, CreatePaymentSerializer, MembershipPlanSerializer, PaymentSerializer
+
 from apps.users.models import User
 
 from .models import Attendance, Member, MembershipPlan, Payment
+from .serializers import (AttendanceSerializer, CreateAttendanceSerializer,
+                          CreatePaymentSerializer, MembershipPlanSerializer,
+                          PaymentSerializer)
 
 
 class IsTrainer(BasePermission):
