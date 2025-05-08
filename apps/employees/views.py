@@ -17,7 +17,10 @@ class IsAdministrator(BasePermission):
         return (
             request.user
             and request.user.is_authenticated
-            and request.user.groups.filter(name="administrator").exists()
+            and (
+                request.user.is_superuser or
+                request.user.groups.filter(name="administrator").exists()
+            )
         )
 
 

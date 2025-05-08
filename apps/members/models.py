@@ -1,7 +1,9 @@
-from django.db import models
-from apps.users.models import User
 from datetime import timedelta
+
+from django.db import models
 from django.utils import timezone
+
+from apps.users.models import User
 
 
 class MembershipPlan(models.Model):

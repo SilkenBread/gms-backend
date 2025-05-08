@@ -1,6 +1,7 @@
 from rest_framework.routers import DefaultRouter
 
-from .views import MemberViewSet, AttendanceViewSet, MembershipPlanViewSet, PaymentViewSet
+from .views import (AttendanceViewSet, MembershipPlanViewSet, MemberViewSet,
+                    PaymentViewSet)
 
 router = DefaultRouter()
 router.register("members", MemberViewSet, basename="member")
