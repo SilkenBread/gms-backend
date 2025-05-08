@@ -123,6 +123,7 @@ USE_TZ = False
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:3001",
     "https://gemelosgym.vercel.app"
 ]
 

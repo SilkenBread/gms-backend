@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from .models import Member, MembershipPlan, Payment
+from .models import Attendance, Member, MembershipPlan, Payment
 
 
 @admin.register(MembershipPlan)
@@ -154,3 +154,7 @@ class PaymentAdmin(admin.ModelAdmin):
             # Para no superusuarios, mostrar solo pagos que ellos registraron
             return qs.filter(created_by=request.user)
         return qs
+
+
+# attendance
+admin.site.register(Attendance)

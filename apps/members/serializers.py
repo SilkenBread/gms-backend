@@ -17,7 +17,7 @@ class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = ['user_id', 'name', 'surname', 'email', 'birth_date', 
-                 'registration_date', 'active_membership', 'membership_type', 
+                 'registration_date', 'active_membership', 
                  'membership_end_date']
 
 class AttendanceSerializer(serializers.ModelSerializer):
