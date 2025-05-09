@@ -1,5 +1,5 @@
 from rest_framework import status, viewsets
-from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.permissions import AllowAny, BasePermission
 from rest_framework.response import Response
 
 from .models import Schedule, Service
@@ -71,14 +71,14 @@ class ScheduleViewSet(viewsets.ViewSet):
     permission_classes = [IsAdministrator]
 
     def list(self, request):
-        self.permission_classes = [IsAuthenticated]
+        self.permission_classes = [AllowAny]
         self.check_permissions(request)
         schedules = Schedule.objects.all()
         serializer = ScheduleSerializer(schedules, many=True)
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        self.permission_classes = [IsAuthenticated]
+        self.permission_classes = [AllowAny]
         self.check_permissions(request)
         try:
             schedule = Schedule.objects.get(pk=pk)
